@@ -1,11 +1,11 @@
 import * as esprima from 'esprima';
-var lineColumn = require('line-column');
+let lineColumn = require('line-column');
 
 const makeRecord = (line, type, name, condition, value) =>
     ({line:line, type:type, name:name, condition:condition, value:value});
 
 
-let notSupported = '{problem:null}';
+let notSupported = {notSupported:'notSupported'};
 let variable_declaration = 'variable declaration';
 let function_declaration = 'function declaration';
 let assignment_expression = 'assignment expression';
@@ -17,20 +17,10 @@ let code_to_parse = null;
 const parseCode = (codeToParse) => {
     code_to_parse = codeToParse;
     let parsedCode = esprima.parseScript(codeToParse, {loc:true});
-    return convertToString(createRecords(parsedCode));
+    return createRecords(parsedCode);
 };
 
 export {parseCode};
-
-
-
-
-const convertToString = (expr_arr) =>{
-    let str = '';
-    for (let i=0; i<expr_arr.length; i++)
-        str = str.concat(JSON.stringify(expr_arr[i], null, 2)).concat(', ');
-    return str;
-};
 
 const getStringByLocation = (str, assignmentValue) =>{
     let start_index = lineColumn(str).toIndex(assignmentValue['loc']['start']);
@@ -80,7 +70,7 @@ const whileHandler = (exp) =>{
     let loc = exp['test']['loc']['start']['line'];
     let test = makeRecord(loc, 'while statement','',condition,'');
     let bodyRecords =  exp['body']['body'].map(expressionHandler);
-    return [test].concat(bodyRecords);
+    return [test].concat(bodyRecords).flat();
 };
 
 //statementType = 'if statement' or 'else if statement'
@@ -113,7 +103,7 @@ const toAssignmentHandler = (exp)=>{
 };
 
 const toExpressionHandler = (exp) =>{
-    return exp['body'].map(expressionHandler);
+    return exp['body'].map(expressionHandler).flat();
 };
 
 const toIfHandler = (exp) =>{
@@ -126,5 +116,5 @@ let handlers = {'VariableDeclaration': toVarDeclHandler, 'ExpressionStatement':t
 //return records array
 const expressionHandler = (exp) => {
     let type =  exp['type'];
-    return handlers[type](exp);
+    return handlers[type](exp).flat();
 };
