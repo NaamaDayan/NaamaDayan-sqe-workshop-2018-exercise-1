@@ -100,8 +100,9 @@ const toVarDeclHandler = (exp) =>{
 const toAssignmentHandler = (exp)=>{
     if (exp['expression']['type'] == 'AssignmentExpression')
         return [assignmentHandler(exp['expression'])];
-    else
-        return notSupported;
+    else if (exp['expression']['type'] == 'SequenceExpression' )
+        return exp['expression']['expressions'].map(assignmentHandler);
+    return notSupported;
 };
 
 const toExpressionHandler = (exp) =>{
