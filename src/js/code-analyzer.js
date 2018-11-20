@@ -80,12 +80,15 @@ const ifHandler = (exp, statementType) =>{
     let condition = getStringByLocation(code_to_parse,exp['test']);
     let test = makeRecord(exp['loc']['start']['line'], statementType, '', condition,'');
     let consequent = expressionHandler(exp['consequent']);
-    let alternate = null;
-    if (exp['alternate']['type'] == 'IfStatement')//else if
-        alternate = ifHandler(exp['alternate'],'else if statement');
-    else
-        alternate = expressionHandler(exp['alternate']);
-    return [test].concat(flattenDeep(consequent)).concat(flattenDeep(alternate));
+    if(exp['alternate']!=null){
+        let alternate = null;
+        if (exp['alternate']['type'] == 'IfStatement')//else if
+            alternate = ifHandler(exp['alternate'], 'else if statement');
+        else
+            alternate = expressionHandler(exp['alternate']);
+        return [test].concat(flattenDeep(consequent)).concat(flattenDeep(alternate));
+    }
+    return [test].concat(flattenDeep(consequent));
 };
 
 const returnHandler = (exp) =>{
