@@ -1,20 +1,48 @@
 import assert from 'assert';
 import {parseCode} from '../src/js/code-analyzer';
 
+let function_1 = '{\n' +
+    '  "line": 1,\n' +
+    '  "type": "function declaration",\n' +
+    '  "name": "binarySearch",\n' +
+    '  "condition": "",\n' +
+    '  "value": ""\n' +
+    '}, {\n' +
+    '  "line": 1,\n' +
+    '  "type": "variable declaration",\n' +
+    '  "name": "X",\n' +
+    '  "condition": "",\n' +
+    '  "value": ""\n' +
+    '}, {\n' +
+    '  "line": 1,\n' +
+    '  "type": "variable declaration",\n' +
+    '  "name": "V",\n' +
+    '  "condition": "",\n' +
+    '  "value": ""\n' +
+    '}, {\n' +
+    '  "line": 1,\n' +
+    '  "type": "variable declaration",\n' +
+    '  "name": "n",\n' +
+    '  "condition": "",\n' +
+    '  "value": ""\n' +
+    '}, {\n' +
+    '  "line": 3,\n' +
+    '  "type": "Return Statement",\n' +
+    '  "name": "",\n' +
+    '  "condition": "",\n' +
+    '  "value": "-1"\n' +
+    '}, ';
+
+
 describe('The javascript parser', () => {
     it('is parsing an empty function correctly', () => {
         assert.equal(
-            JSON.stringify(parseCode(''),{loc:true}),
-            '{"type": "Program","body": [],"sourceType": "script","loc": {"start": {"line": 0,"column": },"end": {"line": 0,"column": 0}}'
-        );
+            parseCode('function binarySearch(X, V, n){\n' +
+                ' \n' +
+                '    return -1;\n' +
+                '}\n'), function_1);
     });
 
-    it('is parsing a simple variable declaration correctly', () => {
-        assert.equal(
-            JSON.stringify(parseCode('let a = 1;'), {loc:true}),
-            '{"type": "Program","body": [{"type": "VariableDeclaration","declarations": [{"type": "VariableDeclarator","id": {"type": "Identifier","name": "a","loc": {"start": {"line": 1,"column": 4},"end": {"line": 1,"column": 5}}},"init": {"type": "Literal","value": 1,"raw": "1","loc": {"start": {"line": 1,"column": 8},"end": {"line": 1,"column": 9}}},"loc": {"start": {"line": 1,"column": 4},"end": {"line": 1,"column": 9}}}],"kind": "let","loc": {"start": {"line": 1,"column": 0},"end": "line": 1,"column": 10}}}],"sourceType": "script","loc": {"start": {"line": 1,"column": 0},"end": {"line": 1,"column": 10}}}'
-        );
-    });
 
 
 });
