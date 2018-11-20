@@ -38,7 +38,7 @@ const createRecords = (parsedCode) => {
 const functionHandler = (exp_function) => {
     let functionName = nameHandler(exp_function['id'], function_declaration);
     let params = exp_function['params'].map(function(x) { return nameHandler(x, variable_declaration); });
-    let body_records = exp_function['body']['body'].map(expressionHandler).flat();
+    let body_records = flattenDeep(exp_function['body']['body'].map(expressionHandler));
     return [functionName].concat(params).concat(body_records);
 };
 
@@ -70,7 +70,7 @@ const loopHandler = (exp, kind) =>{
     let loc = exp['test']['loc']['start']['line'];
     let test = makeRecord(loc, kind,'',condition,'');
     let bodyRecords =  expressionHandler(exp['body']);
-    return [test].concat(bodyRecords).flat();
+    return flattenDeep([test].concat(bodyRecords));
 };
 
 
@@ -85,7 +85,7 @@ const ifHandler = (exp, statementType) =>{
         alternate = ifHandler(exp['alternate'],'else if statement');
     else
         alternate = expressionHandler(exp['alternate']);
-    return [test].concat(consequent.flat()).concat(alternate.flat());
+    return [test].concat(flattenDeep(consequent)).concat(flattenDeep(alternate));
 };
 
 const returnHandler = (exp) =>{
@@ -106,7 +106,7 @@ const toAssignmentHandler = (exp)=>{
 };
 
 const toExpressionHandler = (exp) =>{
-    return exp['body'].map(expressionHandler).flat();
+    return flattenDeep(exp['body'].map(expressionHandler));
 };
 
 const toIfHandler = (exp) =>{
@@ -126,5 +126,10 @@ let handlers = {'VariableDeclaration': toVarDeclHandler, 'ExpressionStatement':t
 //return records array
 const expressionHandler = (exp) => {
     let type =  exp['type'];
-    return handlers[type](exp).flat();
+    return flattenDeep(handlers[type](exp));
 };
+
+
+function flattenDeep(arr1) {
+    return arr1.reduce((acc, val) => Array.isArray(val) ? acc.concat(flattenDeep(val)) : acc.concat(val), []);
+}

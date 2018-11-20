@@ -1,46 +1,14 @@
 import assert from 'assert';
 import {parseCode} from '../src/js/code-analyzer';
 
-let function_1 = '{\n' +
-    '  "line": 1,\n' +
-    '  "type": "function declaration",\n' +
-    '  "name": "binarySearch",\n' +
-    '  "condition": "",\n' +
-    '  "value": ""\n' +
-    '}, {\n' +
-    '  "line": 1,\n' +
-    '  "type": "variable declaration",\n' +
-    '  "name": "X",\n' +
-    '  "condition": "",\n' +
-    '  "value": ""\n' +
-    '}, {\n' +
-    '  "line": 1,\n' +
-    '  "type": "variable declaration",\n' +
-    '  "name": "V",\n' +
-    '  "condition": "",\n' +
-    '  "value": ""\n' +
-    '}, {\n' +
-    '  "line": 1,\n' +
-    '  "type": "variable declaration",\n' +
-    '  "name": "n",\n' +
-    '  "condition": "",\n' +
-    '  "value": ""\n' +
-    '}, {\n' +
-    '  "line": 3,\n' +
-    '  "type": "Return Statement",\n' +
-    '  "name": "",\n' +
-    '  "condition": "",\n' +
-    '  "value": "-1"\n' +
-    '}, ';
-
+let expected_1 = '[{"line":1,"type":"function declaration","name":"binarySearch","condition":"","value":""},{"line":1,"type":"variable declaration","name":"X","condition":"","value":""},{"line":1,"type":"variable declaration","name":"V","condition":"","value":""},{"line":1,"type":"variable declaration","name":"n","condition":"","value":""},{"line":2,"type":"Return Statement","name":"","condition":"","value":"-1"}]';
 
 describe('The javascript parser', () => {
-    it('is parsing an empty function correctly', () => {
+    it('is parsing a simple function correctly', () => {
         assert.equal(
-            parseCode('function binarySearch(X, V, n){\n' +
-                ' \n' +
+            JSON.stringify(parseCode('function binarySearch(X, V, n){\n' +
                 '    return -1;\n' +
-                '}\n'), function_1);
+                '}\n')), expected_1);
     });
 
 
