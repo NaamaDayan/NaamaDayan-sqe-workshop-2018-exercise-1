@@ -17,7 +17,7 @@ let code_to_parse = null;
 const parseCode = (codeToParse) => {
     code_to_parse = codeToParse;
     let parsedCode = esprima.parseScript(codeToParse, {loc:true});
-    return convertToString(createRecords(parsedCode));
+    return (createRecords(parsedCode));
 };
 
 export {parseCode};

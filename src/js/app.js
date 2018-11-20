@@ -8,7 +8,7 @@ $(document).ready(function () {
     $('#codeSubmissionButton').click(() => {
         let codeToParse = $('#codePlaceholder').val();
         let output = parseCode(codeToParse);
-        $('#parsedCode').val(output);
+        $('#parsedCode').val(JSON.stringify(output, null, 0));
     });
 });
 
