@@ -1,11 +1,11 @@
 import * as esprima from 'esprima';
-var lineColumn = require('line-column');
+let lineColumn = require('line-column');
 
 const makeRecord = (line, type, name, condition, value) =>
     ({line:line, type:type, name:name, condition:condition, value:value});
 
 
-let notSupported = '{problem:null}';
+let notSupported = {notSupported:'notSupported'};
 let variable_declaration = 'variable declaration';
 let function_declaration = 'function declaration';
 let assignment_expression = 'assignment expression';
@@ -17,20 +17,10 @@ let code_to_parse = null;
 const parseCode = (codeToParse) => {
     code_to_parse = codeToParse;
     let parsedCode = esprima.parseScript(codeToParse, {loc:true});
-    return (createRecords(parsedCode));
+    return createRecords(parsedCode);
 };
 
 export {parseCode};
-
-
-
-
-const convertToString = (expr_arr) =>{
-    let str = '';
-    for (let i=0; i<expr_arr.length; i++)
-        str = str.concat(JSON.stringify(expr_arr[i], null, 2)).concat(', ');
-    return str;
-};
 
 const getStringByLocation = (str, assignmentValue) =>{
     let start_index = lineColumn(str).toIndex(assignmentValue['loc']['start']);
@@ -48,7 +38,7 @@ const createRecords = (parsedCode) => {
 const functionHandler = (exp_function) => {
     let functionName = nameHandler(exp_function['id'], function_declaration);
     let params = exp_function['params'].map(function(x) { return nameHandler(x, variable_declaration); });
-    let body_records = exp_function['body']['body'].map(expressionHandler).flat();
+    let body_records = flattenDeep(exp_function['body']['body'].map(expressionHandler));
     return [functionName].concat(params).concat(body_records);
 };
 
@@ -75,25 +65,30 @@ const assignmentHandler = (exp) =>{
     return assignmentExp;
 };
 
-const whileHandler = (exp) =>{
+const loopHandler = (exp, kind) =>{
     let condition = getStringByLocation(code_to_parse,exp['test']);
     let loc = exp['test']['loc']['start']['line'];
-    let test = makeRecord(loc, 'while statement','',condition,'');
-    let bodyRecords =  exp['body']['body'].map(expressionHandler);
-    return [test].concat(bodyRecords);
+    let test = makeRecord(loc, kind,'',condition,'');
+    let bodyRecords =  expressionHandler(exp['body']);
+    return flattenDeep([test].concat(bodyRecords));
 };
+
+
 
 //statementType = 'if statement' or 'else if statement'
 const ifHandler = (exp, statementType) =>{
     let condition = getStringByLocation(code_to_parse,exp['test']);
     let test = makeRecord(exp['loc']['start']['line'], statementType, '', condition,'');
     let consequent = expressionHandler(exp['consequent']);
-    let alternate = null;
-    if (exp['alternate']['type'] == 'IfStatement')//else if
-        alternate = ifHandler(exp['alternate'],'else if statement');
-    else
-        alternate = expressionHandler(exp['alternate']);
-    return [test].concat(consequent.flat()).concat(alternate.flat());
+    if(exp['alternate']!=null){
+        let alternate = null;
+        if (exp['alternate']['type'] == 'IfStatement')//else if
+            alternate = ifHandler(exp['alternate'], 'else if statement');
+        else
+            alternate = expressionHandler(exp['alternate']);
+        return [test].concat(flattenDeep(consequent)).concat(flattenDeep(alternate));
+    }
+    return [test].concat(flattenDeep(consequent));
 };
 
 const returnHandler = (exp) =>{
@@ -108,23 +103,36 @@ const toVarDeclHandler = (exp) =>{
 const toAssignmentHandler = (exp)=>{
     if (exp['expression']['type'] == 'AssignmentExpression')
         return [assignmentHandler(exp['expression'])];
-    else
-        return notSupported;
+    else if (exp['expression']['type'] == 'SequenceExpression' )
+        return exp['expression']['expressions'].map(assignmentHandler);
+    return notSupported;
 };
 
 const toExpressionHandler = (exp) =>{
-    return exp['body'].map(expressionHandler);
+    return flattenDeep(exp['body'].map(expressionHandler));
 };
 
 const toIfHandler = (exp) =>{
     return ifHandler(exp,'If Statement');
 };
 
+const toWhileHandler = (exp)=>{
+    return loopHandler(exp, 'while statement');
+};
+
+const toForHandler = (exp)=>{
+    return loopHandler(exp, 'for statement');
+};
 
 let handlers = {'VariableDeclaration': toVarDeclHandler, 'ExpressionStatement':toAssignmentHandler,
-    'WhileStatement':whileHandler, 'BlockStatement':toExpressionHandler, 'IfStatement':toIfHandler, 'ReturnStatement':returnHandler};
+    'WhileStatement':toWhileHandler,'ForStatement':toForHandler, 'BlockStatement':toExpressionHandler, 'IfStatement':toIfHandler, 'ReturnStatement':returnHandler};
 //return records array
 const expressionHandler = (exp) => {
     let type =  exp['type'];
-    return handlers[type](exp);
+    return flattenDeep(handlers[type](exp));
 };
+
+
+function flattenDeep(arr1) {
+    return arr1.reduce((acc, val) => Array.isArray(val) ? acc.concat(flattenDeep(val)) : acc.concat(val), []);
+}
