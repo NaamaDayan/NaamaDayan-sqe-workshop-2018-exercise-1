@@ -5,7 +5,7 @@ const makeRecord = (line, type, name, condition, value) =>
     ({line:line, type:type, name:name, condition:condition, value:value});
 
 
-let notSupported = {notSupported:'notSupported'};
+let notSupported = [];
 let variable_declaration = 'variable declaration';
 let function_declaration = 'function declaration';
 let assignment_expression = 'assignment expression';
