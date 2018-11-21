@@ -65,10 +65,10 @@ const assignmentHandler = (exp) =>{
     return assignmentExp;
 };
 
-const loopHandler = (exp, kind) =>{
+const loopHandler = (exp) =>{
     let condition = getStringByLocation(code_to_parse,exp['test']);
     let loc = exp['test']['loc']['start']['line'];
-    let test = makeRecord(loc, kind,'',condition,'');
+    let test = makeRecord(loc, 'While Statement','',condition,'');
     let bodyRecords =  expressionHandler(exp['body']);
     return flattenDeep([test].concat(bodyRecords));
 };
@@ -116,16 +116,14 @@ const toIfHandler = (exp) =>{
     return ifHandler(exp,'If Statement');
 };
 
-const toWhileHandler = (exp)=>{
-    return loopHandler(exp, 'while statement');
-};
+
 
 const toForHandler = (exp)=>{
     return loopHandler(exp, 'for statement');
 };
 
 let handlers = {'VariableDeclaration': toVarDeclHandler, 'ExpressionStatement':toAssignmentHandler,
-    'WhileStatement':toWhileHandler,'ForStatement':toForHandler, 'BlockStatement':toExpressionHandler, 'IfStatement':toIfHandler, 'ReturnStatement':returnHandler};
+    'WhileStatement':loopHandler,'ForStatement':toForHandler, 'BlockStatement':toExpressionHandler, 'IfStatement':toIfHandler, 'ReturnStatement':returnHandler};
 //return records array
 const expressionHandler = (exp) => {
     let type =  exp['type'];
